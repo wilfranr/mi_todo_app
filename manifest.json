@@ -1,5 +1,6 @@
 {
-  "name": "ToDo Flow - Tu App de Tareas",
+  "name": "ToDo Flow – Tu App de Tareas",
+  "version": "1.0.0",
   "short_name": "ToDo Flow",
   "description": "Una aplicación de lista de tareas progresiva, moderna y funcional.",
   "start_url": ".",

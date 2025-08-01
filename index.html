@@ -635,12 +635,30 @@
           // ==================================================================
 
 
-          // --- El código anterior de la app va aquí ---
-          const themeToggleBtn = document.getElementById('theme-toggle'); // ... y el resto de selectores
-          let tasks = []; let currentTheme = 'light';
+          // --- Selectores de elementos del DOM ---
+          const themeToggleBtn = document.getElementById('theme-toggle');
+          const openModalBtn = document.getElementById('open-modal-btn');
+          const closeModalBtn = document.getElementById('close-modal-btn');
+          const modal = document.getElementById('task-modal');
+          const taskForm = document.getElementById('task-form');
+          const activeTasksList = document.getElementById('active-tasks-list');
+          const completedTasksList = document.getElementById('completed-tasks-list');
+          const modalTitle = document.getElementById('modal-title');
+          const saveTaskBtn = document.getElementById('save-task-btn');
+          const taskIdInput = document.getElementById('task-id');
+          const taskTitleInput = document.getElementById('task-title');
+          const taskDescriptionInput = document.getElementById('task-description');
+          const taskDueDateInput = document.getElementById('task-due-date');
+          const taskDueTimeInput = document.getElementById('task-due-time');
+          const taskRecurrenceInput = document.getElementById('task-recurrence');
+          const toastContainer = document.getElementById('toast-container');
+
+          let tasks = [];
+          let currentTheme = 'light';
+
           const init = () => {
               lucide.createIcons();
-              pwaInit(); // <--- LLAMAMOS A LA FUNCIÓN PWA
+              pwaInit();
               setupEventListeners();
               loadTheme();
               loadTasks();
@@ -648,27 +666,279 @@
               setInterval(() => renderTasks(), 5 * 60 * 1000);
           };
 
-          // ... (El resto del código JS de la app va aquí sin cambios)
-          const setupEventListeners=()=>{themeToggleBtn.addEventListener('click',toggleTheme),openModalBtn.addEventListener('click',openModalForNew),closeModalBtn.addEventListener('click',closeModal),window.addEventListener('click',e=>e.target===modal&&closeModal()),taskForm.addEventListener('submit',handleFormSubmit),document.querySelector('#active-tasks h2').addEventListener('click',toggleSection),document.querySelector('#completed-tasks h2').addEventListener('click',toggleSection),document.body.addEventListener('click',handleTaskActions)};
-          const loadTheme=()=>{const e=localStorage.getItem('theme')||'light';setTheme(e)};
-          const setTheme=e=>{currentTheme=e,document.documentElement.className=`${e}-mode`,themeToggleBtn.innerHTML='light'===e?'<i data-lucide="moon"></i>':'<i data-lucide="sun"></i>',lucide.createIcons(),localStorage.setItem('theme',e)};
-          const toggleTheme=()=>setTheme('light'===currentTheme?'dark':'light');
-          const showToast=(e,t='info')=>{const o=document.getElementById('toast-container'),n=document.createElement('div');n.className=`toast ${t}`,n.textContent=e,o.appendChild(n),setTimeout(()=>{n.classList.add('removing'),n.addEventListener('animationend',()=>n.remove())},3e3)};
-          const loadTasks=()=>{tasks=JSON.parse(localStorage.getItem('tasks')||'[]'),renderTasks()};
-          const saveTasks=()=>localStorage.setItem('tasks',JSON.stringify(tasks));
-          const renderTasks=()=>{const e=[...tasks].sort((e,t)=>e.completed!==t.completed?e.completed?1:-1:e.completed?new Date(t.completedAt)-new Date(e.completedAt):new Date(`${e.dueDate}T${e.dueTime}`)-new Date(`${t.dueDate}T${t.dueTime}`));document.getElementById('active-tasks-list').innerHTML='',document.getElementById('completed-tasks-list').innerHTML='',e.forEach(e=>{const t=createTaskElement(e);e.completed?document.getElementById('completed-tasks-list').appendChild(t):document.getElementById('active-tasks-list').appendChild(t)}),lucide.createIcons()};
-          const createTaskElement=e=>{const t=document.createElement('li');t.className='task-item',t.dataset.id=e.id,e.completed?t.classList.add('completed'):(new Date(`${e.dueDate}T${e.dueTime}`)-Date.now())<0?t.classList.add('overdue'):(new Date(`${e.dueDate}T${e.dueTime}`)-Date.now())<36e5&&t.classList.add('due-soon');const o={none:'',daily:'Diaria',weekly:'Semanal',monthly:'Mensual',annually:'Anual'}[e.recurrence];return t.innerHTML=`\n            <div class="custom-checkbox">\n                <input type="checkbox" id="task-check-${e.id}" ${e.completed?'checked':''}>\n                <label for="task-check-${e.id}"></label>\n            </div>\n            <div class="task-content">\n                <span class="task-title">${e.title}</span>\n                ${e.description?`<p class="task-details">${e.description}</p>`:''}\n                <div class="task-details">\n                    <span><i data-lucide="calendar"></i> ${new Date(`${e.dueDate}T${e.dueTime}`).toLocaleString('es-ES',{dateStyle:'medium',timeStyle:'short'})}</span>\n                    ${o?`<span><i data-lucide="repeat"></i> ${o}</span>`:''}\n                </div>\n            </div>\n            <div class="task-actions">\n                <button class="edit-btn" title="Editar"><i data-lucide="pencil"></i></button>\n                <button class="delete-btn" title="Eliminar"><i data-lucide="trash-2"></i></button>\n            </div>\n        `,t};
-          const handleTaskActions=e=>{const t=e.target.closest('.task-item');if(!t)return;const o=t.dataset.id,n=tasks.find(c=>c.id==o);n&&(e.target.closest('.custom-checkbox')?handleToggleComplete(n):e.target.closest('.edit-btn')?openModalForEdit(n):e.target.closest('.delete-btn')?handleDeleteTask(n,t):e.target.closest('.task-content')&&openModalForEdit(n))};
-          const handleToggleComplete=e=>{const t=!e.completed;if('none'!==e.recurrence&&t){const o=calculateNextDueDate(new Date(`${e.dueDate}T${e.dueTime}`),e.recurrence);tasks.push({...e,id:Date.now(),dueDate:o.toISOString().slice(0,10),dueTime:o.toISOString().slice(11,16),completed:!1,completedAt:null}),showToast('Tarea recurrente generada','info')}e.completed=t,e.completedAt=t?new Date().toISOString():null,saveTasks(),renderTasks(),showToast(t?'¡Tarea completada!':'Tarea reactivada','success')};
-          const handleDeleteTask=(e,t)=>{confirm(`¿Seguro que quieres eliminar "${e.title}"?`)&&(t.classList.add('removing'),t.addEventListener('animationend',()=>{tasks=tasks.filter(t=>t.id!=e.id),saveTasks(),t.remove(),showToast('Tarea eliminada','error')}))};
-          const handleFormSubmit=e=>{e.preventDefault();const t=document.getElementById('task-id').value,o={title:document.getElementById('task-title').value.trim(),description:document.getElementById('task-description').value.trim(),dueDate:document.getElementById('task-due-date').value,dueTime:document.getElementById('task-due-time').value,recurrence:document.getElementById('task-recurrence').value};if(!o.title||!o.dueDate||!o.dueTime)return void showToast('Por favor, completa los campos obligatorios.','error');if(t){const n=tasks.findIndex(c=>c.id==t);n>-1&&(tasks[n]={...tasks[n],...o})}else tasks.push({id:Date.now(),...o,completed:!1,completedAt:null});saveTasks(),renderTasks(),closeModal(),showToast(`Tarea ${t?'actualizada':'creada'} con éxito`,'success')};
-          const openModal=(e,t)=>{document.getElementById('modal-title').textContent=e,document.getElementById('save-task-btn').textContent=t,modal.style.display='block'};
-          const openModalForNew=()=>{taskForm.reset(),document.getElementById('task-id').value='';const e=new Date;e.setMinutes(e.getMinutes()-e.getTimezoneOffset()),document.getElementById('task-due-date').value=e.toISOString().slice(0,10),document.getElementById('task-due-time').value=e.toISOString().slice(11,16),openModal('Nueva Tarea','Crear Tarea')};
-          const openModalForEdit=e=>{taskForm.reset(),document.getElementById('task-id').value=e.id,document.getElementById('task-title').value=e.title,document.getElementById('task-description').value=e.description,document.getElementById('task-due-date').value=e.dueDate,document.getElementById('task-due-time').value=e.dueTime,document.getElementById('task-recurrence').value=e.recurrence,openModal('Editar Tarea','Guardar Cambios')};
-          const closeModal=()=>modal.style.display='none';
-          const toggleSection=e=>e.currentTarget.parentElement.classList.toggle('collapsed');
-          const calculateNextDueDate=(e,t)=>{const o=new Date(e);return{daily:()=>o.setDate(o.getDate()+1),weekly:()=>o.setDate(o.getDate()+7),monthly:()=>o.setMonth(o.getMonth()+1),annually:()=>o.setFullYear(o.getFullYear()+1)}[t]?.(),o};
-          const checkReminders=()=>{const e=new Date;tasks.forEach(t=>{if(!t.completed){const o=new Date(`${t.dueDate}T${t.dueTime}`),n=Math.round((o-e)/6e4);0===n&&showToast(`🔔 ¡Recordatorio! "${t.title}" vence ahora.`,'info')}})},init();
+          const setupEventListeners = () => {
+              themeToggleBtn.addEventListener('click', toggleTheme);
+              openModalBtn.addEventListener('click', openModalForNew);
+              closeModalBtn.addEventListener('click', closeModal);
+              window.addEventListener('click', (e) => {
+                  if (e.target === modal) {
+                      closeModal();
+                  }
+              });
+              taskForm.addEventListener('submit', handleFormSubmit);
+              document.querySelector('#active-tasks h2').addEventListener('click', toggleSection);
+              document.querySelector('#completed-tasks h2').addEventListener('click', toggleSection);
+              document.body.addEventListener('click', handleTaskActions);
+          };
+
+          const loadTheme = () => {
+              const savedTheme = localStorage.getItem('theme') || 'light';
+              setTheme(savedTheme);
+          };
+
+          const setTheme = (theme) => {
+              currentTheme = theme;
+              document.documentElement.className = `${theme}-mode`;
+              themeToggleBtn.innerHTML = theme === 'light' ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
+              lucide.createIcons();
+              localStorage.setItem('theme', theme);
+          };
+
+          const toggleTheme = () => {
+              setTheme(currentTheme === 'light' ? 'dark' : 'light');
+          };
+
+          const showToast = (message, type = 'info') => {
+              const toast = document.createElement('div');
+              toast.className = `toast ${type}`;
+              toast.textContent = message;
+              toastContainer.appendChild(toast);
+              setTimeout(() => {
+                  toast.classList.add('removing');
+                  toast.addEventListener('animationend', () => toast.remove());
+              }, 3000);
+          };
+
+          const loadTasks = () => {
+              tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+              renderTasks();
+          };
+
+          const saveTasks = () => {
+              localStorage.setItem('tasks', JSON.stringify(tasks));
+          };
+
+          const renderTasks = () => {
+              const sortedTasks = [...tasks].sort((a, b) => {
+                  if (a.completed !== b.completed) {
+                      return a.completed ? 1 : -1;
+                  }
+                  if (a.completed) {
+                      return new Date(b.completedAt) - new Date(a.completedAt);
+                  }
+                  return new Date(`${a.dueDate}T${a.dueTime}`) - new Date(`${b.dueDate}T${b.dueTime}`);
+              });
+
+              activeTasksList.innerHTML = '';
+              completedTasksList.innerHTML = '';
+
+              sortedTasks.forEach(task => {
+                  const taskElement = createTaskElement(task);
+                  if (task.completed) {
+                      completedTasksList.appendChild(taskElement);
+                  } else {
+                      activeTasksList.appendChild(taskElement);
+                  }
+              });
+              lucide.createIcons();
+          };
+
+          const createTaskElement = (task) => {
+              const item = document.createElement('li');
+              item.className = 'task-item';
+              item.dataset.id = task.id;
+
+              if (task.completed) {
+                  item.classList.add('completed');
+              } else {
+                  const dueDate = new Date(`${task.dueDate}T${task.dueTime}`);
+                  const now = Date.now();
+                  if (dueDate < now) {
+                      item.classList.add('overdue');
+                  } else if (dueDate - now < 3600000) { // Menos de 1 hora
+                      item.classList.add('due-soon');
+                  }
+              }
+
+              const recurrenceText = {
+                  'none': '',
+                  'daily': 'Diaria',
+                  'weekly': 'Semanal',
+                  'monthly': 'Mensual',
+                  'annually': 'Anual'
+              }[task.recurrence];
+
+              item.innerHTML = `
+            <div class="custom-checkbox">
+                <input type="checkbox" id="task-check-${task.id}" ${task.completed ? 'checked' : ''}>
+                <label for="task-check-${task.id}"></label>
+            </div>
+            <div class="task-content">
+                <span class="task-title">${task.title}</span>
+                ${task.description ? `<p class="task-details">${task.description}</p>` : ''}
+                <div class="task-details">
+                    <span><i data-lucide="calendar"></i> ${new Date(`${task.dueDate}T${task.dueTime}`).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                    ${recurrenceText ? `<span><i data-lucide="repeat"></i> ${recurrenceText}</span>` : ''}
+                </div>
+            </div>
+            <div class="task-actions">
+                <button class="edit-btn" title="Editar"><i data-lucide="pencil"></i></button>
+                <button class="delete-btn" title="Eliminar"><i data-lucide="trash-2"></i></button>
+            </div>
+        `;
+              return item;
+          };
+
+          const handleTaskActions = (e) => {
+              const taskItem = e.target.closest('.task-item');
+              if (!taskItem) return;
+
+              const taskId = taskItem.dataset.id;
+              const task = tasks.find(t => t.id == taskId);
+              if (!task) return;
+
+              if (e.target.closest('.custom-checkbox')) {
+                  handleToggleComplete(task);
+              } else if (e.target.closest('.edit-btn')) {
+                  openModalForEdit(task);
+              } else if (e.target.closest('.delete-btn')) {
+                  handleDeleteTask(task, taskItem);
+              } else if (e.target.closest('.task-content')) {
+                  openModalForEdit(task);
+              }
+          };
+
+          const handleToggleComplete = (task) => {
+              const wasCompleted = task.completed;
+              task.completed = !wasCompleted;
+              task.completedAt = task.completed ? new Date().toISOString() : null;
+
+              if (!wasCompleted && task.recurrence !== 'none') {
+                  const nextDueDate = calculateNextDueDate(new Date(`${task.dueDate}T${task.dueTime}`), task.recurrence);
+                  const newTask = {
+                      ...task,
+                      id: Date.now(),
+                      dueDate: nextDueDate.toISOString().slice(0, 10),
+                      dueTime: nextDueDate.toISOString().slice(11, 16),
+                      completed: false,
+                      completedAt: null
+                  };
+                  tasks.push(newTask);
+                  showToast('Tarea recurrente generada', 'info');
+              }
+
+              saveTasks();
+              renderTasks();
+              showToast(task.completed ? '¡Tarea completada!' : 'Tarea reactivada', 'success');
+          };
+
+          const handleDeleteTask = (task, taskElement) => {
+              if (confirm(`¿Seguro que quieres eliminar "${task.title}"?`)) {
+                  taskElement.classList.add('removing');
+                  taskElement.addEventListener('animationend', () => {
+                      tasks = tasks.filter(t => t.id != task.id);
+                      saveTasks();
+                      taskElement.remove();
+                      showToast('Tarea eliminada', 'error');
+                  });
+              }
+          };
+
+          const handleFormSubmit = (e) => {
+              e.preventDefault();
+              const id = taskIdInput.value;
+              const taskData = {
+                  title: taskTitleInput.value.trim(),
+                  description: taskDescriptionInput.value.trim(),
+                  dueDate: taskDueDateInput.value,
+                  dueTime: taskDueTimeInput.value,
+                  recurrence: taskRecurrenceInput.value,
+              };
+
+              if (!taskData.title || !taskData.dueDate || !taskData.dueTime) {
+                  showToast('Por favor, completa los campos obligatorios.', 'error');
+                  return;
+              }
+
+              if (id) {
+                  const taskIndex = tasks.findIndex(t => t.id == id);
+                  if (taskIndex > -1) {
+                      tasks[taskIndex] = { ...tasks[taskIndex], ...taskData };
+                  }
+              } else {
+                  tasks.push({
+                      id: Date.now(),
+                      ...taskData,
+                      completed: false,
+                      completedAt: null
+                  });
+              }
+              saveTasks();
+              renderTasks();
+              closeModal();
+              showToast(`Tarea ${id ? 'actualizada' : 'creada'} con éxito`, 'success');
+          };
+
+          const openModal = (title, buttonText) => {
+              modalTitle.textContent = title;
+              saveTaskBtn.textContent = buttonText;
+              modal.style.display = 'block';
+          };
+
+          const openModalForNew = () => {
+              taskForm.reset();
+              taskIdInput.value = '';
+              const now = new Date();
+              now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+              taskDueDateInput.value = now.toISOString().slice(0, 10);
+              taskDueTimeInput.value = now.toISOString().slice(11, 16);
+              openModal('Nueva Tarea', 'Crear Tarea');
+          };
+
+          const openModalForEdit = (task) => {
+              taskForm.reset();
+              taskIdInput.value = task.id;
+              taskTitleInput.value = task.title;
+              taskDescriptionInput.value = task.description;
+              taskDueDateInput.value = task.dueDate;
+              taskDueTimeInput.value = task.dueTime;
+              taskRecurrenceInput.value = task.recurrence;
+              openModal('Editar Tarea', 'Guardar Cambios');
+          };
+
+          const closeModal = () => {
+              modal.style.display = 'none';
+          };
+
+          const toggleSection = (e) => {
+              e.currentTarget.parentElement.classList.toggle('collapsed');
+          };
+
+          const calculateNextDueDate = (date, recurrence) => {
+              const newDate = new Date(date);
+              switch (recurrence) {
+                  case 'daily': newDate.setDate(newDate.getDate() + 1); break;
+                  case 'weekly': newDate.setDate(newDate.getDate() + 7); break;
+                  case 'monthly': newDate.setMonth(newDate.getMonth() + 1); break;
+                  case 'annually': newDate.setFullYear(newDate.getFullYear() + 1); break;
+              }
+              return newDate;
+          };
+
+          const checkReminders = () => {
+              const now = new Date();
+              tasks.forEach(task => {
+                  if (!task.completed) {
+                      const dueDate = new Date(`${task.dueDate}T${task.dueTime}`);
+                      const diffMinutes = Math.round((dueDate - now) / 60000);
+                      if (diffMinutes === 0) {
+                          showToast(`🔔 ¡Recordatorio! "${task.title}" vence ahora.`, 'info');
+                      }
+                  }
+              });
+          };
+
+          init();
 
       });
     </script>

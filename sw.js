@@ -6,7 +6,9 @@ const CACHE_NAME = 'todo-flow-cache-v2'; // Actualizado para forzar la actualiza
 const urlsToCache = [
   '.',
   'index.html',
-  'manifest.json'
+  'manifest.json',
+  'icons/icon-192x192.png',
+  'icons/icon-512x512.png'
 ];
 
 // Evento de instalación: precachear los recursos esenciales de la aplicación.

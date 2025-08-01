@@ -9,12 +9,12 @@
   "theme_color": "#007aff",
   "icons": [
     {
-      "src": "https://i.imgur.com/example-192.png",
+      "src": "https://i.imgur.com/gAthC4y.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://i.imgur.com/example-512.png",
+      "src": "https://i.imgur.com/gAthC4y.png",
       "sizes": "512x512",
       "type": "image/png"
     }

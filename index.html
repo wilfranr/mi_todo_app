@@ -611,39 +611,6 @@
         // Dentro de tu <script> en index.html, modifica la función pwaInit
 
         const pwaInit = () => {
-          // Generar el manifiesto dinámicamente
-          const manifest = {
-            name: "ToDo Flow - Tu App de Tareas",
-            short_name: "ToDo Flow",
-            description:
-              "Una aplicación de lista de tareas progresiva, moderna y funcional.",
-            start_url: "/mi_todo_app/", // <-- Usa '.' para compatibilidad con GitHub Pages
-            display: "standalone",
-            background_color: "#f0f2f5",
-            theme_color: "#007aff",
-            icons: [
-              {
-                // USA UN ENLACE DIRECTO A LA IMAGEN (ej. i.imgur.com/...png)
-                src: "https://i.imgur.com/gAthC4y.png", // <-- ¡CORREGIDO!
-                sizes: "192x192",
-                type: "image/png",
-              },
-              {
-                src: "https://i.imgur.com/gAthC4y.png", // <-- ¡CORREGIDO!
-                sizes: "512x512",
-                type: "image/png",
-              },
-            ],
-          };
-          const manifestBlob = new Blob([JSON.stringify(manifest)], {
-            type: "application/json",
-          });
-          const manifestURL = URL.createObjectURL(manifestBlob);
-          document
-            .querySelector('link[rel="manifest"]')
-            .setAttribute("href", manifestURL);
-
-          // ... el resto de la función sigue igual
           if ("serviceWorker" in navigator) {
             navigator.serviceWorker
               .register("sw.js") // <-- Asegúrate que sw.js está en la raíz

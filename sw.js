@@ -2,38 +2,68 @@
 
 // sw.js
 
-const CACHE_NAME = "todo-flow-cache-v2"; // <-- Cambia el nombre para forzar la actualización
+const CACHE_NAME = 'todo-flow-cache-v2'; // Actualizado para forzar la actualización del Service Worker
 const urlsToCache = [
-  "/mi_todo_app/", // <-- ¡SOLUCIÓN! Ruta al directorio raíz de tu app
-  "/mi_todo_app/index.html", // <-- ¡SOLUCIÓN! Ruta completa al archivo principal
-  "https://unpkg.com/lucide@latest", // Esto está bien porque es una URL completa
+  '.',
+  'index.html',
+  'manifest.json'
 ];
 
-// Evento de instalación: se dispara cuando el SW se instala.
-self.addEventListener("install", (event) => {
-  // Esperamos hasta que la promesa se resuelva.
+// Evento de instalación: precachear los recursos esenciales de la aplicación.
+self.addEventListener('install', event => {
   event.waitUntil(
-    // Abrimos la caché con el nombre que definimos.
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log("Cache abierta");
-      // Añadimos todos los archivos de nuestra lista a la caché.
-      return cache.addAll(urlsToCache);
-    }),
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Cache abierta y recursos precacheados');
+        return cache.addAll(urlsToCache);
+      })
   );
 });
 
-// Evento de fetch: se dispara cada vez que la app pide un recurso (una imagen, un script, etc.).
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    // Buscamos si la petición ya está en la caché.
-    caches.match(event.request).then((response) => {
-      // Si la respuesta está en la caché, la devolvemos.
-      if (response) {
-        return response;
-      }
-      // Si no, hacemos la petición a la red como siempre.
-      return fetch(event.request);
-    }),
+// Evento de activación: limpiar cachés antiguas.
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Eliminando caché antigua:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
+  return self.clients.claim();
+});
+
+// Evento de fetch: servir desde la caché primero, luego red (estrategia Cache-First).
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Si la respuesta está en la caché, la devolvemos.
+        if (response) {
+          return response;
+        }
+        // Si no, hacemos la petición a la red, la usamos y la almacenamos en caché para futuras peticiones.
+        return fetch(event.request).then(
+          response => {
+            // Comprobamos si recibimos una respuesta válida
+            if(!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }
+        );
+      })
+    );
 });
 

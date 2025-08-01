@@ -584,201 +584,225 @@
     <div id="toast-container"></div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener("DOMContentLoaded", () => {
+        // ==================================================================
+        // ==================== INICIO: CÓDIGO PWA ========================
+        // ==================================================================
 
-          // ==================================================================
-          // ==================== INICIO: CÓDIGO PWA ========================
-          // ==================================================================
+        // --- 3. Generación y Registro del Service Worker y Manifiesto ---
+        // Dentro de tu <script> en index.html, modifica la función pwaInit
 
-          // --- 3. Generación y Registro del Service Worker y Manifiesto ---
-          const pwaInit = () => {
-              // Generar el manifiesto dinámicamente
-              const manifest = {
-                  "name": "ToDo Flow - Tu App de Tareas",
-                  "short_name": "ToDo Flow",
-                  "description": "Una aplicación de lista de tareas progresiva, moderna y funcional.",
-                  "start_url": ".",
-                  "display": "standalone",
-                  "background_color": "#f0f2f5",
-                  "theme_color": "#007aff",
-                  "icons": [
-                      {
-                          "src": "https://imgur.com/a/3OsgCtW", // <-- REEMPLAZA CON LA URL DE TU ICONO 192x192
-                          "sizes": "192x192",
-                          "type": "image/png"
-                      },
-                      {
-                          "src": "https://imgur.com/a/3OsgCtW", // <-- REEMPLAZA CON LA URL DE TU ICONO 192x192
-                          "sizes": "512x512",
-                          "type": "image/png"
-                      }
-                  ]
-              };
-              const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-              const manifestURL = URL.createObjectURL(manifestBlob);
-              document.querySelector('link[rel="manifest"]').setAttribute('href', manifestURL);
-
-              // Registrar el Service Worker
-              if ('serviceWorker' in navigator) {
-                  navigator.serviceWorker.register('sw.js')
-                      .then(registration => {
-                          console.log('Service Worker registrado con éxito:', registration);
-                      })
-                      .catch(error => {
-                          console.error('Error al registrar el Service Worker:', error);
-                      });
-              }
+        const pwaInit = () => {
+          // Generar el manifiesto dinámicamente
+          const manifest = {
+            name: "ToDo Flow - Tu App de Tareas",
+            short_name: "ToDo Flow",
+            description:
+              "Una aplicación de lista de tareas progresiva, moderna y funcional.",
+            start_url: ".", // <-- Usa '.' para compatibilidad con GitHub Pages
+            display: "standalone",
+            background_color: "#f0f2f5",
+            theme_color: "#007aff",
+            icons: [
+              {
+                // USA UN ENLACE DIRECTO A LA IMAGEN (ej. i.imgur.com/...png)
+                src: "https://i.imgur.com/gAthC4y.png", // <-- ¡CORREGIDO!
+                sizes: "192x192",
+                type: "image/png",
+              },
+              {
+                src: "https://i.imgur.com/gAthC4y.png", // <-- ¡CORREGIDO!
+                sizes: "512x512",
+                type: "image/png",
+              },
+            ],
           };
+          const manifestBlob = new Blob([JSON.stringify(manifest)], {
+            type: "application/json",
+          });
+          const manifestURL = URL.createObjectURL(manifestBlob);
+          document
+            .querySelector('link[rel="manifest"]')
+            .setAttribute("href", manifestURL);
 
-          // ==================================================================
-          // ===================== FIN: CÓDIGO PWA ==========================
-          // ==================================================================
-
-
-          // --- Selectores de elementos del DOM ---
-          const themeToggleBtn = document.getElementById('theme-toggle');
-          const openModalBtn = document.getElementById('open-modal-btn');
-          const closeModalBtn = document.getElementById('close-modal-btn');
-          const modal = document.getElementById('task-modal');
-          const taskForm = document.getElementById('task-form');
-          const activeTasksList = document.getElementById('active-tasks-list');
-          const completedTasksList = document.getElementById('completed-tasks-list');
-          const modalTitle = document.getElementById('modal-title');
-          const saveTaskBtn = document.getElementById('save-task-btn');
-          const taskIdInput = document.getElementById('task-id');
-          const taskTitleInput = document.getElementById('task-title');
-          const taskDescriptionInput = document.getElementById('task-description');
-          const taskDueDateInput = document.getElementById('task-due-date');
-          const taskDueTimeInput = document.getElementById('task-due-time');
-          const taskRecurrenceInput = document.getElementById('task-recurrence');
-          const toastContainer = document.getElementById('toast-container');
-
-          let tasks = [];
-          let currentTheme = 'light';
-
-          const init = () => {
-              lucide.createIcons();
-              pwaInit();
-              setupEventListeners();
-              loadTheme();
-              loadTasks();
-              setInterval(checkReminders, 60000);
-              setInterval(() => renderTasks(), 5 * 60 * 1000);
-          };
-
-          const setupEventListeners = () => {
-              themeToggleBtn.addEventListener('click', toggleTheme);
-              openModalBtn.addEventListener('click', openModalForNew);
-              closeModalBtn.addEventListener('click', closeModal);
-              window.addEventListener('click', (e) => {
-                  if (e.target === modal) {
-                      closeModal();
-                  }
+          // ... el resto de la función sigue igual
+          if ("serviceWorker" in navigator) {
+            navigator.serviceWorker
+              .register("sw.js") // <-- Asegúrate que sw.js está en la raíz
+              .then((registration) => {
+                console.log(
+                  "Service Worker registrado con éxito:",
+                  registration,
+                );
+              })
+              .catch((error) => {
+                console.error("Error al registrar el Service Worker:", error);
               });
-              taskForm.addEventListener('submit', handleFormSubmit);
-              document.querySelector('#active-tasks h2').addEventListener('click', toggleSection);
-              document.querySelector('#completed-tasks h2').addEventListener('click', toggleSection);
-              document.body.addEventListener('click', handleTaskActions);
-          };
+          }
+        };
 
-          const loadTheme = () => {
-              const savedTheme = localStorage.getItem('theme') || 'light';
-              setTheme(savedTheme);
-          };
+        // ==================================================================
+        // ===================== FIN: CÓDIGO PWA ==========================
+        // ==================================================================
 
-          const setTheme = (theme) => {
-              currentTheme = theme;
-              document.documentElement.className = `${theme}-mode`;
-              themeToggleBtn.innerHTML = theme === 'light' ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
-              lucide.createIcons();
-              localStorage.setItem('theme', theme);
-          };
+        // --- Selectores de elementos del DOM ---
+        const themeToggleBtn = document.getElementById("theme-toggle");
+        const openModalBtn = document.getElementById("open-modal-btn");
+        const closeModalBtn = document.getElementById("close-modal-btn");
+        const modal = document.getElementById("task-modal");
+        const taskForm = document.getElementById("task-form");
+        const activeTasksList = document.getElementById("active-tasks-list");
+        const completedTasksList = document.getElementById(
+          "completed-tasks-list",
+        );
+        const modalTitle = document.getElementById("modal-title");
+        const saveTaskBtn = document.getElementById("save-task-btn");
+        const taskIdInput = document.getElementById("task-id");
+        const taskTitleInput = document.getElementById("task-title");
+        const taskDescriptionInput =
+          document.getElementById("task-description");
+        const taskDueDateInput = document.getElementById("task-due-date");
+        const taskDueTimeInput = document.getElementById("task-due-time");
+        const taskRecurrenceInput = document.getElementById("task-recurrence");
+        const toastContainer = document.getElementById("toast-container");
 
-          const toggleTheme = () => {
-              setTheme(currentTheme === 'light' ? 'dark' : 'light');
-          };
+        let tasks = [];
+        let currentTheme = "light";
 
-          const showToast = (message, type = 'info') => {
-              const toast = document.createElement('div');
-              toast.className = `toast ${type}`;
-              toast.textContent = message;
-              toastContainer.appendChild(toast);
-              setTimeout(() => {
-                  toast.classList.add('removing');
-                  toast.addEventListener('animationend', () => toast.remove());
-              }, 3000);
-          };
+        const init = () => {
+          lucide.createIcons();
+          pwaInit();
+          setupEventListeners();
+          loadTheme();
+          loadTasks();
+          setInterval(checkReminders, 60000);
+          setInterval(() => renderTasks(), 5 * 60 * 1000);
+        };
 
-          const loadTasks = () => {
-              tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-              renderTasks();
-          };
+        const setupEventListeners = () => {
+          themeToggleBtn.addEventListener("click", toggleTheme);
+          openModalBtn.addEventListener("click", openModalForNew);
+          closeModalBtn.addEventListener("click", closeModal);
+          window.addEventListener("click", (e) => {
+            if (e.target === modal) {
+              closeModal();
+            }
+          });
+          taskForm.addEventListener("submit", handleFormSubmit);
+          document
+            .querySelector("#active-tasks h2")
+            .addEventListener("click", toggleSection);
+          document
+            .querySelector("#completed-tasks h2")
+            .addEventListener("click", toggleSection);
+          document.body.addEventListener("click", handleTaskActions);
+        };
 
-          const saveTasks = () => {
-              localStorage.setItem('tasks', JSON.stringify(tasks));
-          };
+        const loadTheme = () => {
+          const savedTheme = localStorage.getItem("theme") || "light";
+          setTheme(savedTheme);
+        };
 
-          const renderTasks = () => {
-              const sortedTasks = [...tasks].sort((a, b) => {
-                  if (a.completed !== b.completed) {
-                      return a.completed ? 1 : -1;
-                  }
-                  if (a.completed) {
-                      return new Date(b.completedAt) - new Date(a.completedAt);
-                  }
-                  return new Date(`${a.dueDate}T${a.dueTime}`) - new Date(`${b.dueDate}T${b.dueTime}`);
-              });
+        const setTheme = (theme) => {
+          currentTheme = theme;
+          document.documentElement.className = `${theme}-mode`;
+          themeToggleBtn.innerHTML =
+            theme === "light"
+              ? '<i data-lucide="moon"></i>'
+              : '<i data-lucide="sun"></i>';
+          lucide.createIcons();
+          localStorage.setItem("theme", theme);
+        };
 
-              activeTasksList.innerHTML = '';
-              completedTasksList.innerHTML = '';
+        const toggleTheme = () => {
+          setTheme(currentTheme === "light" ? "dark" : "light");
+        };
 
-              sortedTasks.forEach(task => {
-                  const taskElement = createTaskElement(task);
-                  if (task.completed) {
-                      completedTasksList.appendChild(taskElement);
-                  } else {
-                      activeTasksList.appendChild(taskElement);
-                  }
-              });
-              lucide.createIcons();
-          };
+        const showToast = (message, type = "info") => {
+          const toast = document.createElement("div");
+          toast.className = `toast ${type}`;
+          toast.textContent = message;
+          toastContainer.appendChild(toast);
+          setTimeout(() => {
+            toast.classList.add("removing");
+            toast.addEventListener("animationend", () => toast.remove());
+          }, 3000);
+        };
 
-          const createTaskElement = (task) => {
-              const item = document.createElement('li');
-              item.className = 'task-item';
-              item.dataset.id = task.id;
+        const loadTasks = () => {
+          tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+          renderTasks();
+        };
 
-              if (task.completed) {
-                  item.classList.add('completed');
-              } else {
-                  const dueDate = new Date(`${task.dueDate}T${task.dueTime}`);
-                  const now = Date.now();
-                  if (dueDate < now) {
-                      item.classList.add('overdue');
-                  } else if (dueDate - now < 3600000) { // Menos de 1 hora
-                      item.classList.add('due-soon');
-                  }
-              }
+        const saveTasks = () => {
+          localStorage.setItem("tasks", JSON.stringify(tasks));
+        };
 
-              const recurrenceText = {
-                  'none': '',
-                  'daily': 'Diaria',
-                  'weekly': 'Semanal',
-                  'monthly': 'Mensual',
-                  'annually': 'Anual'
-              }[task.recurrence];
+        const renderTasks = () => {
+          const sortedTasks = [...tasks].sort((a, b) => {
+            if (a.completed !== b.completed) {
+              return a.completed ? 1 : -1;
+            }
+            if (a.completed) {
+              return new Date(b.completedAt) - new Date(a.completedAt);
+            }
+            return (
+              new Date(`${a.dueDate}T${a.dueTime}`) -
+              new Date(`${b.dueDate}T${b.dueTime}`)
+            );
+          });
 
-              item.innerHTML = `
+          activeTasksList.innerHTML = "";
+          completedTasksList.innerHTML = "";
+
+          sortedTasks.forEach((task) => {
+            const taskElement = createTaskElement(task);
+            if (task.completed) {
+              completedTasksList.appendChild(taskElement);
+            } else {
+              activeTasksList.appendChild(taskElement);
+            }
+          });
+          lucide.createIcons();
+        };
+
+        const createTaskElement = (task) => {
+          const item = document.createElement("li");
+          item.className = "task-item";
+          item.dataset.id = task.id;
+
+          if (task.completed) {
+            item.classList.add("completed");
+          } else {
+            const dueDate = new Date(`${task.dueDate}T${task.dueTime}`);
+            const now = Date.now();
+            if (dueDate < now) {
+              item.classList.add("overdue");
+            } else if (dueDate - now < 3600000) {
+              // Menos de 1 hora
+              item.classList.add("due-soon");
+            }
+          }
+
+          const recurrenceText = {
+            none: "",
+            daily: "Diaria",
+            weekly: "Semanal",
+            monthly: "Mensual",
+            annually: "Anual",
+          }[task.recurrence];
+
+          item.innerHTML = `
             <div class="custom-checkbox">
-                <input type="checkbox" id="task-check-${task.id}" ${task.completed ? 'checked' : ''}>
+                <input type="checkbox" id="task-check-${task.id}" ${task.completed ? "checked" : ""}>
                 <label for="task-check-${task.id}"></label>
             </div>
             <div class="task-content">
                 <span class="task-title">${task.title}</span>
-                ${task.description ? `<p class="task-details">${task.description}</p>` : ''}
+                ${task.description ? `<p class="task-details">${task.description}</p>` : ""}
                 <div class="task-details">
-                    <span><i data-lucide="calendar"></i> ${new Date(`${task.dueDate}T${task.dueTime}`).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}</span>
-                    ${recurrenceText ? `<span><i data-lucide="repeat"></i> ${recurrenceText}</span>` : ''}
+                    <span><i data-lucide="calendar"></i> ${new Date(`${task.dueDate}T${task.dueTime}`).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" })}</span>
+                    ${recurrenceText ? `<span><i data-lucide="repeat"></i> ${recurrenceText}</span>` : ""}
                 </div>
             </div>
             <div class="task-actions">
@@ -786,162 +810,180 @@
                 <button class="delete-btn" title="Eliminar"><i data-lucide="trash-2"></i></button>
             </div>
         `;
-              return item;
-          };
+          return item;
+        };
 
-          const handleTaskActions = (e) => {
-              const taskItem = e.target.closest('.task-item');
-              if (!taskItem) return;
+        const handleTaskActions = (e) => {
+          const taskItem = e.target.closest(".task-item");
+          if (!taskItem) return;
 
-              const taskId = taskItem.dataset.id;
-              const task = tasks.find(t => t.id == taskId);
-              if (!task) return;
+          const taskId = taskItem.dataset.id;
+          const task = tasks.find((t) => t.id == taskId);
+          if (!task) return;
 
-              if (e.target.closest('.custom-checkbox')) {
-                  handleToggleComplete(task);
-              } else if (e.target.closest('.edit-btn')) {
-                  openModalForEdit(task);
-              } else if (e.target.closest('.delete-btn')) {
-                  handleDeleteTask(task, taskItem);
-              } else if (e.target.closest('.task-content')) {
-                  openModalForEdit(task);
-              }
-          };
+          if (e.target.closest(".custom-checkbox")) {
+            handleToggleComplete(task);
+          } else if (e.target.closest(".edit-btn")) {
+            openModalForEdit(task);
+          } else if (e.target.closest(".delete-btn")) {
+            handleDeleteTask(task, taskItem);
+          } else if (e.target.closest(".task-content")) {
+            openModalForEdit(task);
+          }
+        };
 
-          const handleToggleComplete = (task) => {
-              const wasCompleted = task.completed;
-              task.completed = !wasCompleted;
-              task.completedAt = task.completed ? new Date().toISOString() : null;
+        const handleToggleComplete = (task) => {
+          const wasCompleted = task.completed;
+          task.completed = !wasCompleted;
+          task.completedAt = task.completed ? new Date().toISOString() : null;
 
-              if (!wasCompleted && task.recurrence !== 'none') {
-                  const nextDueDate = calculateNextDueDate(new Date(`${task.dueDate}T${task.dueTime}`), task.recurrence);
-                  const newTask = {
-                      ...task,
-                      id: Date.now(),
-                      dueDate: nextDueDate.toISOString().slice(0, 10),
-                      dueTime: nextDueDate.toISOString().slice(11, 16),
-                      completed: false,
-                      completedAt: null
-                  };
-                  tasks.push(newTask);
-                  showToast('Tarea recurrente generada', 'info');
-              }
+          if (!wasCompleted && task.recurrence !== "none") {
+            const nextDueDate = calculateNextDueDate(
+              new Date(`${task.dueDate}T${task.dueTime}`),
+              task.recurrence,
+            );
+            const newTask = {
+              ...task,
+              id: Date.now(),
+              dueDate: nextDueDate.toISOString().slice(0, 10),
+              dueTime: nextDueDate.toISOString().slice(11, 16),
+              completed: false,
+              completedAt: null,
+            };
+            tasks.push(newTask);
+            showToast("Tarea recurrente generada", "info");
+          }
 
+          saveTasks();
+          renderTasks();
+          showToast(
+            task.completed ? "¡Tarea completada!" : "Tarea reactivada",
+            "success",
+          );
+        };
+
+        const handleDeleteTask = (task, taskElement) => {
+          if (confirm(`¿Seguro que quieres eliminar "${task.title}"?`)) {
+            taskElement.classList.add("removing");
+            taskElement.addEventListener("animationend", () => {
+              tasks = tasks.filter((t) => t.id != task.id);
               saveTasks();
-              renderTasks();
-              showToast(task.completed ? '¡Tarea completada!' : 'Tarea reactivada', 'success');
+              taskElement.remove();
+              showToast("Tarea eliminada", "error");
+            });
+          }
+        };
+
+        const handleFormSubmit = (e) => {
+          e.preventDefault();
+          const id = taskIdInput.value;
+          const taskData = {
+            title: taskTitleInput.value.trim(),
+            description: taskDescriptionInput.value.trim(),
+            dueDate: taskDueDateInput.value,
+            dueTime: taskDueTimeInput.value,
+            recurrence: taskRecurrenceInput.value,
           };
 
-          const handleDeleteTask = (task, taskElement) => {
-              if (confirm(`¿Seguro que quieres eliminar "${task.title}"?`)) {
-                  taskElement.classList.add('removing');
-                  taskElement.addEventListener('animationend', () => {
-                      tasks = tasks.filter(t => t.id != task.id);
-                      saveTasks();
-                      taskElement.remove();
-                      showToast('Tarea eliminada', 'error');
-                  });
+          if (!taskData.title || !taskData.dueDate || !taskData.dueTime) {
+            showToast("Por favor, completa los campos obligatorios.", "error");
+            return;
+          }
+
+          if (id) {
+            const taskIndex = tasks.findIndex((t) => t.id == id);
+            if (taskIndex > -1) {
+              tasks[taskIndex] = { ...tasks[taskIndex], ...taskData };
+            }
+          } else {
+            tasks.push({
+              id: Date.now(),
+              ...taskData,
+              completed: false,
+              completedAt: null,
+            });
+          }
+          saveTasks();
+          renderTasks();
+          closeModal();
+          showToast(
+            `Tarea ${id ? "actualizada" : "creada"} con éxito`,
+            "success",
+          );
+        };
+
+        const openModal = (title, buttonText) => {
+          modalTitle.textContent = title;
+          saveTaskBtn.textContent = buttonText;
+          modal.style.display = "block";
+        };
+
+        const openModalForNew = () => {
+          taskForm.reset();
+          taskIdInput.value = "";
+          const now = new Date();
+          now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+          taskDueDateInput.value = now.toISOString().slice(0, 10);
+          taskDueTimeInput.value = now.toISOString().slice(11, 16);
+          openModal("Nueva Tarea", "Crear Tarea");
+        };
+
+        const openModalForEdit = (task) => {
+          taskForm.reset();
+          taskIdInput.value = task.id;
+          taskTitleInput.value = task.title;
+          taskDescriptionInput.value = task.description;
+          taskDueDateInput.value = task.dueDate;
+          taskDueTimeInput.value = task.dueTime;
+          taskRecurrenceInput.value = task.recurrence;
+          openModal("Editar Tarea", "Guardar Cambios");
+        };
+
+        const closeModal = () => {
+          modal.style.display = "none";
+        };
+
+        const toggleSection = (e) => {
+          e.currentTarget.parentElement.classList.toggle("collapsed");
+        };
+
+        const calculateNextDueDate = (date, recurrence) => {
+          const newDate = new Date(date);
+          switch (recurrence) {
+            case "daily":
+              newDate.setDate(newDate.getDate() + 1);
+              break;
+            case "weekly":
+              newDate.setDate(newDate.getDate() + 7);
+              break;
+            case "monthly":
+              newDate.setMonth(newDate.getMonth() + 1);
+              break;
+            case "annually":
+              newDate.setFullYear(newDate.getFullYear() + 1);
+              break;
+          }
+          return newDate;
+        };
+
+        const checkReminders = () => {
+          const now = new Date();
+          tasks.forEach((task) => {
+            if (!task.completed) {
+              const dueDate = new Date(`${task.dueDate}T${task.dueTime}`);
+              const diffMinutes = Math.round((dueDate - now) / 60000);
+              if (diffMinutes === 0) {
+                showToast(
+                  `🔔 ¡Recordatorio! "${task.title}" vence ahora.`,
+                  "info",
+                );
               }
-          };
+            }
+          });
+        };
 
-          const handleFormSubmit = (e) => {
-              e.preventDefault();
-              const id = taskIdInput.value;
-              const taskData = {
-                  title: taskTitleInput.value.trim(),
-                  description: taskDescriptionInput.value.trim(),
-                  dueDate: taskDueDateInput.value,
-                  dueTime: taskDueTimeInput.value,
-                  recurrence: taskRecurrenceInput.value,
-              };
-
-              if (!taskData.title || !taskData.dueDate || !taskData.dueTime) {
-                  showToast('Por favor, completa los campos obligatorios.', 'error');
-                  return;
-              }
-
-              if (id) {
-                  const taskIndex = tasks.findIndex(t => t.id == id);
-                  if (taskIndex > -1) {
-                      tasks[taskIndex] = { ...tasks[taskIndex], ...taskData };
-                  }
-              } else {
-                  tasks.push({
-                      id: Date.now(),
-                      ...taskData,
-                      completed: false,
-                      completedAt: null
-                  });
-              }
-              saveTasks();
-              renderTasks();
-              closeModal();
-              showToast(`Tarea ${id ? 'actualizada' : 'creada'} con éxito`, 'success');
-          };
-
-          const openModal = (title, buttonText) => {
-              modalTitle.textContent = title;
-              saveTaskBtn.textContent = buttonText;
-              modal.style.display = 'block';
-          };
-
-          const openModalForNew = () => {
-              taskForm.reset();
-              taskIdInput.value = '';
-              const now = new Date();
-              now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-              taskDueDateInput.value = now.toISOString().slice(0, 10);
-              taskDueTimeInput.value = now.toISOString().slice(11, 16);
-              openModal('Nueva Tarea', 'Crear Tarea');
-          };
-
-          const openModalForEdit = (task) => {
-              taskForm.reset();
-              taskIdInput.value = task.id;
-              taskTitleInput.value = task.title;
-              taskDescriptionInput.value = task.description;
-              taskDueDateInput.value = task.dueDate;
-              taskDueTimeInput.value = task.dueTime;
-              taskRecurrenceInput.value = task.recurrence;
-              openModal('Editar Tarea', 'Guardar Cambios');
-          };
-
-          const closeModal = () => {
-              modal.style.display = 'none';
-          };
-
-          const toggleSection = (e) => {
-              e.currentTarget.parentElement.classList.toggle('collapsed');
-          };
-
-          const calculateNextDueDate = (date, recurrence) => {
-              const newDate = new Date(date);
-              switch (recurrence) {
-                  case 'daily': newDate.setDate(newDate.getDate() + 1); break;
-                  case 'weekly': newDate.setDate(newDate.getDate() + 7); break;
-                  case 'monthly': newDate.setMonth(newDate.getMonth() + 1); break;
-                  case 'annually': newDate.setFullYear(newDate.getFullYear() + 1); break;
-              }
-              return newDate;
-          };
-
-          const checkReminders = () => {
-              const now = new Date();
-              tasks.forEach(task => {
-                  if (!task.completed) {
-                      const dueDate = new Date(`${task.dueDate}T${task.dueTime}`);
-                      const diffMinutes = Math.round((dueDate - now) / 60000);
-                      if (diffMinutes === 0) {
-                          showToast(`🔔 ¡Recordatorio! "${task.title}" vence ahora.`, 'info');
-                      }
-                  }
-              });
-          };
-
-          init();
-
+        init();
       });
     </script>
   </body>
 </html>
-

@@ -15,7 +15,7 @@ self.addEventListener('install', event => {
   // Esperamos hasta que la promesa se resuelva.
   event.waitUntil(
     // Abrimos la caché con el nombre que definimos.
-    caches.open(CACHE_CHE_NAME)
+    caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Cache abierta');
         // Añadimos todos los archivos de nuestra lista a la caché.

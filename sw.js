@@ -1,14 +1,12 @@
 // sw.js
 
-const CACHE_NAME = "todo-flow-cache-v1";
-// Lista de archivos para precachear. El '/' es clave para la página principal.
+// sw.js
+
+const CACHE_NAME = "todo-flow-cache-v2"; // <-- Cambia el nombre para forzar la actualización
 const urlsToCache = [
-  "/",
-  "/index.html",
-  // Si tuvieras más archivos, los añadirías aquí:
-  // '/style.css',
-  // '/app.js',
-  // '/images/icon.png'
+  "/mi_todo_app/", // <-- ¡SOLUCIÓN! Ruta al directorio raíz de tu app
+  "/mi_todo_app/index.html", // <-- ¡SOLUCIÓN! Ruta completa al archivo principal
+  "https://unpkg.com/lucide@latest", // Esto está bien porque es una URL completa
 ];
 
 // Evento de instalación: se dispara cuando el SW se instala.
